@@ -1,0 +1,17 @@
+{
+  "name": "sectionify",
+  "description": "CLI for single-file code dependency management",
+  "url": "http://github.com/broofa/node-uuid",
+  "keywords": [
+    "dependencies",
+    "microi-framework",
+    "require"
+  ],
+  "author": "Robert Kieffer <robert@broofa.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/broofa/sectionify.git"
+  },
+  "bin": "./sectionify",
+  "version": "0.1.0"
+}
