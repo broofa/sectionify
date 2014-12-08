@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Copyright (c) 2010-2012 Robert Kieffer
 
+var argv = require('minimist')(process.argv.slice(2));
 var fs = require('fs');
 
 function Source(path) {
@@ -19,7 +20,7 @@ Source.prototype._parse = function() {
       var section = {
         name: name,
         line: lineno,
-        requires: fields[3] == 'REQUIRES' ? fields.slice(4) : []
+        requires: fields[3] == 'REQUIRE' ? fields.slice(4) : []
       };
       if (name) {
         this.sections[name] = section;
@@ -60,10 +61,13 @@ Source.prototype.toString = function(sections) {
 };
 
 // main
-var input = process.argv[2];
-var requires = process.argv.slice(3);
+var input = argv._.shift();
 var output = process.stdout;
 
 var source = new Source(input);
-var sections = source.resolve(requires);
+var sections = source.resolve(argv._);
+
+if (argv.header) {
+  output.write(argv.header);
+}
 output.write(source.toString(sections));
