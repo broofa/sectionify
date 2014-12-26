@@ -3,71 +3,16 @@
 
 var argv = require('minimist')(process.argv.slice(2));
 var fs = require('fs');
-
-function Source(path) {
-  this.path = path;
-  this._parse();
-}
-
-Source.prototype._parse = function() {
-  this.lines = fs.readFileSync(this.path, 'utf8').split('\n');
-  this.sections = {};
-
-  this.lines = this.lines.map(function(line, lineno) {
-    if (/^\s*\/\/SECTION/.test(line)) {
-      var fields = line.split(/\W+/);
-      var name = fields[2];
-      var section = {
-        name: name,
-        line: lineno,
-        requires: fields[3] == 'REQUIRE' ? fields.slice(4) : []
-      };
-      if (name) {
-        this.sections[name] = section;
-      }
-      return section;
-    }
-
-    return line;
-  }.bind(this));
-};
-
-Source.prototype.resolve = function(requires) {
-  for (var i = 0; i < requires.length; i++) {
-    var section = this.sections[requires[i]];
-    if (section && section.name && section.requires) {
-      section.requires.forEach(function(sectionName) {
-        if (requires.indexOf(sectionName) < 0) {
-          requires.push(sectionName);
-        }
-      });
-    }
-  }
-
-  return requires;
-};
-
-Source.prototype.toString = function(sections) {
-  sections = sections || [];
-
-  var include = true;
-  return this.lines.filter(function(line, lineno) {
-    if (typeof(line) !== 'string') {
-      include = ~sections.indexOf(line.name) || (!line.name);
-      return false;
-    }
-    return include;
-  }).join('\n');
-};
+var Sectionify = require('./index.js');
 
 // main
 var input = argv._.shift();
 var output = process.stdout;
 
-var source = new Source(input);
-var sections = source.resolve(argv._);
+var stream = new Sectionify.Stream(argv._);
 
 if (argv.header) {
   output.write(argv.header);
 }
-output.write(source.toString(sections));
+
+fs.createReadStream(input).pipe(stream).pipe(output);
